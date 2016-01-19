@@ -4,9 +4,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"time"
-
-	"github.com/fjukstad/gocache"
 )
 
 type WeatherData struct {
@@ -130,7 +129,12 @@ var ukedager = [...]string{
 }
 
 func main() {
-	resp, err := gocache.Get("http://www.yr.no/sted/Norge/Troms/Troms%C3%B8/Troms%C3%B8/varsel.xml")
+	resp, err := http.Get("http://www.yr.no/sted/Norge/Troms/Troms%C3%B8/Troms%C3%B8/varsel.xml")
+
+	if err != nil {
+		fmt.Println("Could not fetch data from yr.no")
+		return
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 
