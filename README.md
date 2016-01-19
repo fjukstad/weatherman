@@ -9,7 +9,7 @@ $ go get github.com/fjukstad/weatherman
 $ weatherman
 ```
 
-# Example output:
+# Example output
 ```
 $ weatherman
 Tirsdag 19.01.2016
