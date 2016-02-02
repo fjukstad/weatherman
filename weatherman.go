@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/xml"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -129,6 +131,10 @@ var ukedager = [...]string{
 }
 
 func main() {
+
+	var text = flag.Bool("text", false, "text forecast. default false")
+	flag.Parse()
+
 	resp, err := http.Get("http://www.yr.no/sted/Norge/Troms/Troms%C3%B8/Troms%C3%B8/varsel.xml")
 
 	if err != nil {
@@ -147,10 +153,16 @@ func main() {
 
 	err = xml.Unmarshal(body, &wd)
 
-	PrintTabular(wd.Forecasts.Tabular)
+	if *text {
+		wd.PrintText()
+	} else {
+		wd.PrintTabular()
+	}
+
 }
 
-func PrintTabular(tab Tabular) error {
+func (wd WeatherData) PrintTabular() error {
+	tab := wd.Forecasts.Tabular
 	var forrigeDag = ""
 
 	for _, fc := range tab.Forecasts {
@@ -170,7 +182,6 @@ func PrintTabular(tab Tabular) error {
 
 		if forrigeDag == "" || forrigeDag != dag {
 			forrigeDag = dag
-
 			fmt.Println(dag, from.Format("02.01.2006"))
 		}
 
@@ -186,4 +197,40 @@ func PrintTabular(tab Tabular) error {
 		fmt.Print("\n")
 	}
 	return nil
+}
+
+func (wd WeatherData) PrintText() error {
+	forecasts := wd.Forecasts.Text.Location.Forecasts
+	for _, fc := range forecasts {
+
+		from, err := time.Parse("2006-01-02", fc.From)
+		if err != nil {
+			fmt.Println("Could not parse time", err)
+			return err
+		}
+
+		to, err := time.Parse("2006-01-02", fc.To)
+		if err != nil {
+			fmt.Println("Could not parse time", err)
+			return err
+		}
+
+		fromDay := ukedager[from.Weekday()]
+		toDay := ukedager[to.Weekday()]
+
+		if fromDay != toDay {
+			fmt.Println(fromDay, "til", toDay)
+		} else {
+			fmt.Println(fromDay)
+		}
+
+		txt := strings.Split(fc.Forecast, "</strong>")
+		forecast := txt[1]
+
+		fmt.Print("\t")
+		fmt.Println(forecast)
+
+	}
+	return nil
+
 }
