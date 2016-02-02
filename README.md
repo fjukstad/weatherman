@@ -37,7 +37,7 @@ Fredag 22.01.2016
 # Todo
 - [x] Make a simple prototype with weather for Tromsø. 
 - [ ] Add support for emojis instead of text.
-- [ ] Add support for text forecast, not just tabular. 
+- [x] Add support for text forecast, not just tabular. 
 - [ ] Add command line options such as location and date
 
 # Credit
