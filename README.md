@@ -1,12 +1,20 @@
 # Weatherman
 Fetch and print forecast for Tromsø from yr.no. In Norwegian. 
 
-# Usage 
+# Installation and usage   
 First install [go](http://golang.org). Then: 
 
 ```
 $ go get github.com/fjukstad/weatherman
-$ weatherman
+$ weatherman --help
+Usage of weatherman:
+  -language string
+        language you want the forecast in (supports 'no' and 'en' (default "no")
+  -location string
+        the location you want the weather forecast from (default
+        "/Norge/Troms/Tromsø/Tromsø")
+  -text
+        text forecast. default false
 ```
 
 # Example output
