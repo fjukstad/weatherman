@@ -133,9 +133,10 @@ var ukedager = [...]string{
 func main() {
 
 	var text = flag.Bool("text", false, "text forecast. default false")
+	var location = flag.String("location", "/Norge/Troms/Tromsø/Tromsø", "the location you want the weather forecast from")
 	flag.Parse()
 
-	resp, err := http.Get("http://www.yr.no/sted/Norge/Troms/Troms%C3%B8/Troms%C3%B8/varsel.xml")
+	resp, err := http.Get("http://www.yr.no/sted/" + *location + "/varsel.xml")
 
 	if err != nil {
 		fmt.Println("Could not fetch data from yr.no")
