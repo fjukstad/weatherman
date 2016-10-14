@@ -130,13 +130,44 @@ var ukedager = [...]string{
 	"Lørdag",
 }
 
+var weekdays = [...]string{
+	"Sunday",
+	"Monday",
+	"Tueday",
+	"Wednesday",
+	"Thursday",
+	"Saturday",
+	"Sunday",
+}
+
+var place = map[string]string{
+	"no": "sted",
+	"en": "place",
+}
+
+var degrees = map[string]string{
+	"no": "grader",
+	"en": "degrees",
+}
+
+var precipitation = map[string]string{
+	"no": "nedbør",
+	"en": "precipitation",
+}
+
+var and = map[string]string{
+	"no": "og",
+	"en": "and",
+}
+
 func main() {
 
 	var text = flag.Bool("text", false, "text forecast. default false")
 	var location = flag.String("location", "/Norge/Troms/Tromsø/Tromsø", "the location you want the weather forecast from")
+	var language = flag.String("language", "no", "language you want the forecast in (supports 'no' and 'en'")
 	flag.Parse()
 
-	resp, err := http.Get("http://www.yr.no/sted/" + *location + "/varsel.xml")
+	resp, err := http.Get("http://www.yr.no/" + place[*language] + "/" + *location + "/varsel.xml")
 
 	if err != nil {
 		fmt.Println("Could not fetch data from yr.no")
@@ -155,16 +186,27 @@ func main() {
 	err = xml.Unmarshal(body, &wd)
 
 	if *text {
-		wd.PrintText()
+		wd.PrintText(*language)
 	} else {
-		wd.PrintTabular()
+		wd.PrintTabular(*language)
 	}
 
 }
 
-func (wd WeatherData) PrintTabular() error {
+func getWeekdays(language string) [7]string {
+	if language == "no" {
+		return ukedager
+	} else {
+		return weekdays
+	}
+}
+
+func (wd WeatherData) PrintTabular(language string) error {
 	tab := wd.Forecasts.Tabular
+
 	var forrigeDag = ""
+
+	days := getWeekdays(language)
 
 	for _, fc := range tab.Forecasts {
 		from, err := time.Parse("2006-01-02T15:04:05", fc.From)
@@ -179,7 +221,7 @@ func (wd WeatherData) PrintTabular() error {
 			return err
 		}
 
-		dag := ukedager[from.Weekday()]
+		dag := days[from.Weekday()]
 
 		if forrigeDag == "" || forrigeDag != dag {
 			forrigeDag = dag
@@ -189,19 +231,22 @@ func (wd WeatherData) PrintTabular() error {
 		fmt.Print("\t")
 		fmt.Print(from.Format("15:04"), "-", to.Format("15:04"), " ")
 		fmt.Print(fc.Symbol.Name)
-		fmt.Print(" og ")
+		fmt.Print(" " + and[language] + " ")
 		fmt.Print(fc.Temperature.Value)
-		fmt.Print(" grader. ")
+		fmt.Print(" " + degrees[language] + " ")
 
-		fmt.Print(fc.Percipitation.Value, " mm nedbør")
+		fmt.Print(fc.Percipitation.Value, " mm "+precipitation[language])
 
 		fmt.Print("\n")
 	}
 	return nil
 }
 
-func (wd WeatherData) PrintText() error {
+func (wd WeatherData) PrintText(language string) error {
 	forecasts := wd.Forecasts.Text.Location.Forecasts
+
+	days := getWeekdays(language)
+
 	for _, fc := range forecasts {
 
 		from, err := time.Parse("2006-01-02", fc.From)
@@ -216,8 +261,8 @@ func (wd WeatherData) PrintText() error {
 			return err
 		}
 
-		fromDay := ukedager[from.Weekday()]
-		toDay := ukedager[to.Weekday()]
+		fromDay := days[from.Weekday()]
+		toDay := days[to.Weekday()]
 
 		if fromDay != toDay {
 			fmt.Println(fromDay, "til", toDay)
